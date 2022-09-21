@@ -4,21 +4,22 @@ from typing import Dict
 from random import choice, randint
 import telebot
 from telebot import types
-from markup import reply_markup_start, reply_markup_end, reply_markup_new_game
+from markup import reply_markup_start, reply_markup_end, reply_markup_new_game, reply_markup_help
 import constants
 from hangman_game import HangmanGame
-
 
 bot = telebot.TeleBot(constants.TOKEN)
 games: Dict[int, HangmanGame] = {}
 
-film_list = ["Однажды в Голливуде", "Семь психопатов", "Бойцовский клуб", 
-        "Три биллборда на границе Эббинга и Миссури", "Дикие истории",
-        "Залечь на дно в Брюгге", "Голгофа", "Большая афера",
-        "Большой куш", "Однажды в Ирландии", "Гнев человеческий",
-        "Карты, деньги, два ствола", "Джентельмены", "Большой Лебовски"]
+film_list = ["Однажды в Голливуде", "Семь психопатов", "Бойцовский клуб",
+             "Три биллборда на границе Эббинга и Миссури", "Дикие истории",
+             "Залечь на дно в Брюгге", "Голгофа", "Большая афера",
+             "Большой куш", "Однажды в Ирландии", "Гнев человеческий",
+             "Карты, деньги, два ствола", "Джентельмены", "Большой Лебовски"]
+
 book_list = ["Семь навыков высокоэффективных людей", "Богатый папа, бедный папа",
-        "Властелин Колец", "Хоббит", "Зов Ктулху", "1984", "Восьмой навык"]
+             "Властелин Колец", "Хоббит", "Зов Ктулху", "1984", "Восьмой навык"]
+
 habr_list = ['https://habr.com/ru/post/245065/', 'https://habr.com/ru/post/302914/']
 
 seq = [randint(240000, 600000) for _ in range(30)]
@@ -27,26 +28,30 @@ for i in range(len(seq)):
         response = requests.head('https://habr.com/ru/post/' + str(seq[i]))
         if response.status_code == 200:
             habr_list.append('https://habr.com/ru/post/' + str(seq[i]))
-    except:
-        pass
+    except Exception as ex:
+        print(ex)
 
 
 @bot.message_handler(commands=['start'])
 def start_command(message: telebot.types.Message) -> None:
-    bot.send_photo(message.from_user.id, 'https://avatars.mds.yandex.net/get-zen_doc/1875939/pub_612e3698fc890f70eef3b674_612e36c5e9fa270869a2cb37/scale_1200')
-    keyboard1 = types.ReplyKeyboardMarkup(True)
-    keyboard1.row('/start')
-    keyboard = types.InlineKeyboardMarkup();
-    key_film = types.InlineKeyboardButton(text='Какой фильм посмотреть?', callback_data='film');
-    keyboard.add(key_film);
-    key_book= types.InlineKeyboardButton(text='Какую книгу прочитать?', callback_data='book');
-    keyboard.add(key_book);
-    key_hangman = types.InlineKeyboardButton(text='Сыграть в виселицу', callback_data='hangman');
-    keyboard.add(key_hangman);
-    key_habr= types.InlineKeyboardButton(text='Статья с Хабра', callback_data='habr');
-    keyboard.add(key_habr);
-    question = 'Выбери:';
-    bot.send_message(message.from_user.id, text=question, reply_markup=keyboard)
+    bot.send_photo(message.from_user.id, 'https://avatars.mds.yandex.net/get-zen_doc/1875939/'
+                                         'pub_612e3698fc890f70eef3b674_612e36c5e9fa270869a2cb37/scale_1200')
+    keyboard1 = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    item1 = types.KeyboardButton("/start")
+    item2 = types.KeyboardButton("/help")
+    keyboard1.add(item1)
+    keyboard1.add(item2)
+    bot.send_message(message.from_user.id, text='У нас много интересного для тебя!', reply_markup=keyboard1)
+    keyboard = types.InlineKeyboardMarkup()
+    key_film = types.InlineKeyboardButton(text='Какой фильм посмотреть?', callback_data='film')
+    keyboard.add(key_film)
+    key_book = types.InlineKeyboardButton(text='Какую книгу прочитать?', callback_data='book')
+    keyboard.add(key_book)
+    key_hangman = types.InlineKeyboardButton(text='Сыграть в виселицу', callback_data='hangman')
+    keyboard.add(key_hangman)
+    key_habr = types.InlineKeyboardButton(text='Статья с Хабра', callback_data='habr')
+    keyboard.add(key_habr)
+    bot.send_message(message.from_user.id, text='Выбери:', reply_markup=keyboard)
 
 
 @bot.callback_query_handler(func=lambda call: True)
@@ -74,10 +79,16 @@ def callback_worker(call: telebot.types.CallbackQuery) -> None:
     elif call.data == "go":
         go_command(call.message.chat.id)
     elif call.data == "rules":
+        rules_command(call.message.chat.id)
+    elif call.data == "help":
         help_command(call.message.chat.id)
 
 
 def help_command(chat_id: int) -> None:
+    show_choice(chat_id, constants.HELP_TEXT, types.InlineKeyboardMarkup())
+
+
+def rules_command(chat_id: int) -> None:
     show_choice(chat_id, constants.RULES_TEXT, reply_markup_new_game)
 
 
@@ -93,7 +104,8 @@ def go_command(chat_id: int) -> None:
 @bot.message_handler(content_types=['text'])
 def reception_text(message: telebot.types.Message) -> None:
     if message.chat.id not in games.keys():
-        show_choice(message.chat.id, constants.WARNING_TEXT, reply_markup_new_game)
+        show_choice(message.chat.id, 'Чтобы узнать функции бота нажмите /help', reply_markup_help)
+        # show_choice(message.chat.id, constants.WARNING_TEXT, reply_markup_new_game)
     elif is_incorrect_input(message.text.lower()):
         bot.send_message(message.chat.id, constants.SEND_LTR_TEXT)
     else:
@@ -116,8 +128,7 @@ def send_game_message(message: telebot.types.Message) -> None:
 
 
 def show_choice(chat_id: int, text: str, reply_markup: telebot.types.InlineKeyboardMarkup) -> None:
-    bot.send_message(chat_id, text = text, reply_markup = reply_markup)
-
+    bot.send_message(chat_id, text=text, reply_markup=reply_markup)
 
 
 def is_incorrect_input(input_text: str) -> bool:
