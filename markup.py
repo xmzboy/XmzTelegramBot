@@ -20,6 +20,14 @@ reply_markup_new_game = InlineKeyboardMarkup(
      ]
 )
 
+reply_markup_help = InlineKeyboardMarkup(
+    [
+        [InlineKeyboardButton(text='/help',
+                              callback_data="help")
+         ]
+     ]
+)
+
 reply_markup_end = InlineKeyboardMarkup(
     [
         [InlineKeyboardButton(text=constants.NEW_GAME_BUTTON_TEXT,
