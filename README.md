@@ -1,6 +1,6 @@
 # XmzTelegramBot
 My first simple telegram bot
-You can test the bot in Telegram by name - https://t.me/cyber_xmz_bot
+You can test the bot in Telegram by name - https://t.me/cyber_xmz_bot (deployed on Heroku)
 
 # Contents
 - [How it works](#how-it-works)
