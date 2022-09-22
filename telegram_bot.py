@@ -4,7 +4,7 @@ from typing import Dict
 from random import choice, randint
 import telebot
 from telebot import types
-from markup import reply_markup_start, reply_markup_end, reply_markup_new_game, reply_markup_help
+from markup import reply_markup_start, reply_markup_end, reply_markup_new_game
 import constants
 from hangman_game import HangmanGame
 
@@ -80,12 +80,6 @@ def callback_worker(call: telebot.types.CallbackQuery) -> None:
         go_command(call.message.chat.id)
     elif call.data == "rules":
         rules_command(call.message.chat.id)
-    elif call.data == "help":
-        help_command(call.message.chat.id)
-
-
-def help_command(chat_id: int) -> None:
-    show_choice(chat_id, constants.HELP_TEXT, types.InlineKeyboardMarkup())
 
 
 def rules_command(chat_id: int) -> None:
@@ -104,7 +98,7 @@ def go_command(chat_id: int) -> None:
 @bot.message_handler(content_types=['text'])
 def reception_text(message: telebot.types.Message) -> None:
     if message.chat.id not in games.keys():
-        show_choice(message.chat.id, 'Чтобы узнать функции бота нажмите /help', reply_markup_help)
+        show_choice(message.chat.id, constants.HELP_TEXT, types.InlineKeyboardMarkup())
         # show_choice(message.chat.id, constants.WARNING_TEXT, reply_markup_new_game)
     elif is_incorrect_input(message.text.lower()):
         bot.send_message(message.chat.id, constants.SEND_LTR_TEXT)
