@@ -3,9 +3,6 @@ import emoji
 import os
 
 TOKEN = os.environ["TOKEN"]
-
-
-
 COUNT_STAGES: Final[int] = 7
 STAGES: Final[tuple] = tuple([f"resource/images/stage{i}.png" for i in range(1, COUNT_STAGES + 1)])
 WORDS_FILE: Final[str] = "resource/words.txt"
